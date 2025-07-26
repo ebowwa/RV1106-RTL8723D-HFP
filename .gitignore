@@ -1,0 +1,49 @@
+# Build artifacts
+*.o
+*.a
+*.so
+*.so.*
+*.ko
+*.mod.c
+*.pyc
+__pycache__/
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Device files
+*.img
+*.dtb
+*.bin
+*.fw
+
+# Logs
+*.log
+*.txt.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Credentials
+*.key
+*.pem
+.env
+
+# Device dumps
+dump_*
+core.*

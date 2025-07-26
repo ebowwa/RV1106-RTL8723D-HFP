@@ -1,0 +1,31 @@
+# RV1106 BlueFusion HFP Requirements
+# Core dependencies for Classic Bluetooth HFP support
+
+# Async and networking
+asyncio>=3.4.3
+aiofiles>=23.0
+
+# Data models and validation
+pydantic>=2.0
+dataclasses
+
+# Logging and CLI
+structlog>=23.0
+click>=8.1.0
+rich>=13.0
+
+# Analysis and monitoring
+numpy>=1.24.0
+pandas>=2.0.0
+
+# API server (optional)
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+websockets>=11.0
+
+# Classic Bluetooth support
+pybluez==0.23  # For Classic Bluetooth on Linux
+# Note: On macOS, install with: pip install git+https://github.com/pybluez/pybluez.git
+
+# Audio analysis
+pyaudio>=0.2.11

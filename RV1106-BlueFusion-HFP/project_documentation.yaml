@@ -1,0 +1,358 @@
+# RV1106 BlueFusion HFP Project Documentation
+# Complete YAML documentation of the project
+
+project:
+  name: "RV1106-BlueFusion-HFP"
+  description: "Comprehensive HFP testing and analysis toolkit for RV1106 + RTL8723D"
+  version: "1.0.0"
+  created: "2025-01-25"
+  location: "/Users/ebowwa/bluez-alsa/BlueFusion/RV1106-BlueFusion-HFP/"
+
+problem_statement:
+  source: "RV1106-BLE-HF-Bringup-Issue.pdf"
+  device: 
+    soc: "RV1106"
+    bluetooth_chip: "Realtek RTL8723D"
+  issue: "HFP (Hands-Free Profile) disconnects during phone calls"
+  symptoms:
+    - "A2DP works fine for music streaming"
+    - "HFP disconnects automatically when making calls"
+    - "Error: 'Too small packet for stream_rej'"
+  
+root_cause_analysis:
+  identified_causes:
+    - description: "Codec negotiation failures"
+      details: "mSBC vs CVSD codec incompatibility"
+    - description: "SCO routing issues"
+      details: "HCI vs PCM routing misconfiguration"
+    - description: "BlueALSA limitations"
+      details: "Limited HFP-HF (client) support in BlueALSA"
+    - description: "Timing issues"
+      details: "AT command flow timing problems"
+
+solution_components:
+  core_modules:
+    - file: "src/classic_adapter.py"
+      purpose: "Classic Bluetooth device management"
+      key_functions:
+        - "scan_classic_devices"
+        - "connect_hfp"
+        - "connect_sco"
+    
+    - file: "src/hfp_handler.py"
+      purpose: "Complete HFP protocol analyzer"
+      key_features:
+        - "AT command parsing"
+        - "State machine tracking"
+        - "Failure pattern detection"
+    
+    - file: "src/sco_audio.py"
+      purpose: "SCO audio quality monitoring"
+      metrics:
+        - "packet_loss_rate"
+        - "latency"
+        - "jitter"
+        - "quality_score"
+    
+    - file: "src/rv1106_adapter.py"
+      purpose: "RV1106-specific device control"
+      capabilities:
+        - "rkdeveloptool integration"
+        - "USB device detection"
+        - "Bluetooth initialization"
+    
+    - file: "src/unified_monitor.py"
+      purpose: "Combined BLE/Classic monitoring"
+
+  testing_tools:
+    - file: "rv1106_hfp_test.py"
+      description: "Main HFP test script"
+      modes:
+        - "direct test with phone MAC"
+        - "continuous monitoring mode"
+    
+    - file: "test_hfp_adb.py"
+      description: "ADB-based testing"
+      steps:
+        - "Check ADB connection"
+        - "Verify Bluetooth status"
+        - "Check BlueALSA"
+        - "Scan for devices"
+        - "Test HFP connection"
+        - "Analyze logs"
+    
+    - file: "test_usb_device.py"
+      description: "USB device detection"
+      checks:
+        - "Rockchip device presence"
+        - "System Bluetooth status"
+
+  initialization_scripts:
+    - file: "init_rtl8723d.sh"
+      description: "RTL8723D initialization script"
+      methods:
+        - "rtk_h5 protocol"
+        - "generic H5 protocol"
+        - "H4 protocol"
+    
+    - file: "init_rtl8723d_v2.sh"
+      description: "Alternative initialization"
+      features:
+        - "Multiple baud rate testing"
+        - "Different protocol attempts"
+        - "Manual firmware loading"
+
+  api_server:
+    main: "api/server.py"
+    routes: "api/classic_routes.py"
+    endpoints:
+      - path: "/api/classic/status"
+        method: "GET"
+        purpose: "Get adapter status"
+      
+      - path: "/api/classic/devices"
+        method: "GET"
+        purpose: "Scan for devices"
+      
+      - path: "/api/classic/hfp/connect"
+        method: "POST"
+        purpose: "Connect HFP"
+      
+      - path: "/api/classic/hfp/{id}/sco"
+        method: "POST"
+        purpose: "Establish SCO"
+      
+      - path: "/api/classic/audio/analysis"
+        method: "GET"
+        purpose: "Get audio quality"
+
+  documentation:
+    - file: "README.md"
+      sections:
+        - "Overview"
+        - "Problem description"
+        - "Solution approach"
+        - "Quick start"
+    
+    - file: "SETUP_GUIDE.md"
+      content:
+        - "Prerequisites"
+        - "Installation steps"
+        - "Configuration"
+        - "Testing"
+    
+    - file: "TROUBLESHOOTING.md"
+      issues:
+        - "HFP disconnection"
+        - "Codec negotiation"
+        - "SCO routing"
+        - "Device initialization"
+    
+    - file: "API_REFERENCE.md"
+      format: "OpenAPI compatible"
+      includes:
+        - "All endpoints"
+        - "Request/response examples"
+        - "WebSocket interface"
+
+  configuration:
+    file: "config/default.yaml"
+    sections:
+      rv1106:
+        rkdeveloptool_path: "rkdeveloptool"
+        device_path: "/dev/ttyS5"
+        baud_rate: 115200
+      
+      bluetooth:
+        hfp:
+          role: "HF"
+          codec_preference: ["CVSD"]
+          features:
+            codec_negotiation: false
+            wideband_speech: false
+        
+        sco:
+          routing: "hci"
+          mtu: 64
+          packet_type: "HV3"
+      
+      bluealsa:
+        profiles: ["a2dp-sink", "hfp-hf"]
+        codecs:
+          cvsd:
+            enabled: true
+          msbc:
+            enabled: false
+
+test_execution_results:
+  device_detection:
+    status: "success"
+    device_id: "6609c47ab4c3d674"
+    vendor_id: "0x2207"
+    product_id: "0x0019"
+    connection: "USB-C (ADB)"
+  
+  bluetooth_initialization:
+    firmware_location: "/lib/firmware/rtlbt/"
+    uart_device: "/dev/ttyS5"
+    baud_rate_discovered: 1500000
+    hci_interface_created: true
+    initialization_status: "partial"
+    issues:
+      - "MAC address shows 00:00:00:00:00:00"
+      - "Firmware not loading properly"
+      - "Needs Realtek-specific initialization"
+  
+  bluealsa_status:
+    service_running: true
+    pcm_devices: "not found"
+    reason: "No working HCI interface"
+
+identified_solutions:
+  immediate:
+    - description: "Force CVSD codec only"
+      command: "bluealsa -p hfp-hf --hfp-codec=cvsd"
+    
+    - description: "Configure SCO routing"
+      command: "hciconfig hci0 scomtu 64:8"
+    
+    - description: "Disable eSCO"
+      sysfs: "/sys/module/bluetooth/parameters/disable_esco"
+  
+  proper_fix:
+    - description: "Install rtk_hciattach"
+      source: "https://github.com/lwfinger/rtl8723bs_bt"
+      command: "./rtk_hciattach -n -s 115200 /dev/ttyS5 rtk_h5"
+    
+    - description: "GPIO control"
+      steps:
+        - "Find BT_REG_ON GPIO"
+        - "Find BT_RST GPIO"
+        - "Perform proper reset sequence"
+    
+    - description: "Load kernel modules"
+      modules:
+        - "btrtl"
+        - "hci_uart"
+        - "rtl8723bs"
+
+alternative_solutions:
+  ofono:
+    description: "Better HFP support than BlueALSA"
+    advantages:
+      - "Complete telephony stack"
+      - "Proper HFP state machine"
+      - "Better codec negotiation"
+  
+  pulseaudio:
+    description: "With module-bluetooth-policy"
+    configuration: "load-module module-bluetooth-policy hfp=yes"
+  
+  external_adapter:
+    description: "USB Bluetooth adapter"
+    reason: "Bypass RTL8723D initialization issues"
+
+project_structure:
+  root: "RV1106-BlueFusion-HFP/"
+  directories:
+    src:
+      description: "Core Python modules"
+      files:
+        - "classic_adapter.py"
+        - "hfp_handler.py"
+        - "sco_audio.py"
+        - "rv1106_adapter.py"
+        - "unified_monitor.py"
+        - "__init__.py"
+    
+    api:
+      description: "FastAPI server"
+      files:
+        - "server.py"
+        - "classic_routes.py"
+    
+    config:
+      description: "Configuration files"
+      files:
+        - "default.yaml"
+    
+    docs:
+      description: "Documentation"
+      files:
+        - "SETUP_GUIDE.md"
+        - "TROUBLESHOOTING.md"
+        - "API_REFERENCE.md"
+  
+  root_files:
+    - "README.md"
+    - "SUMMARY.md"
+    - "EXECUTION_RESULTS.md"
+    - "FINAL_DIAGNOSIS.md"
+    - "requirements.txt"
+    - "setup.sh"
+    - "rv1106_hfp_test.py"
+    - "test_hfp_adb.py"
+    - "test_usb_device.py"
+    - "init_rtl8723d.sh"
+    - "init_rtl8723d_v2.sh"
+    - "project_documentation.yaml"
+
+dependencies:
+  python_packages:
+    - "asyncio>=3.4.3"
+    - "aiofiles>=23.0"
+    - "pydantic>=2.0"
+    - "structlog>=23.0"
+    - "click>=8.1.0"
+    - "rich>=13.0"
+    - "numpy>=1.24.0"
+    - "pandas>=2.0.0"
+    - "fastapi>=0.100.0"
+    - "uvicorn[standard]>=0.23.0"
+    - "websockets>=11.0"
+    - "pybluez==0.23"
+    - "pyaudio>=0.2.11"
+  
+  system_requirements:
+    - "Python 3.8+"
+    - "BlueZ 5.50+"
+    - "BlueALSA"
+    - "ADB (for device testing)"
+
+usage_examples:
+  basic_test:
+    command: "python rv1106_hfp_test.py E8:D5:2B:13:B5:AB"
+    description: "Test HFP with specific phone"
+  
+  monitor_mode:
+    command: "python rv1106_hfp_test.py --monitor"
+    description: "Continuous monitoring"
+  
+  adb_test:
+    command: "python test_hfp_adb.py"
+    description: "Test via ADB connection"
+  
+  api_server:
+    command: "python api/server.py"
+    description: "Start REST API server"
+  
+  initialization:
+    command: "adb shell /tmp/init_rtl8723d.sh"
+    description: "Initialize Bluetooth on device"
+
+key_achievements:
+  - "Created comprehensive HFP analysis framework"
+  - "Built protocol-level AT command analyzer"
+  - "Implemented SCO audio quality monitoring"
+  - "Integrated rkdeveloptool support"
+  - "Developed ADB-based testing tools"
+  - "Created REST API for remote control"
+  - "Documented all troubleshooting steps"
+  - "Identified root cause of initialization failure"
+
+future_improvements:
+  - "Add GUI dashboard for monitoring"
+  - "Implement automated fix attempts"
+  - "Add support for more Bluetooth chips"
+  - "Create Android app for on-device testing"
+  - "Add machine learning for failure prediction"

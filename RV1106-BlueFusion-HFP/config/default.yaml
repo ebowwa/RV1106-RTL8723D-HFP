@@ -1,0 +1,65 @@
+# RV1106 BlueFusion HFP Configuration
+
+# RV1106 Device Settings
+rv1106:
+  rkdeveloptool_path: "rkdeveloptool"  # Path to rkdeveloptool binary
+  device_path: "/dev/ttyS5"             # Serial device for RTL8723D
+  baud_rate: 115200                     # UART baud rate
+
+# Bluetooth Settings
+bluetooth:
+  # HFP Configuration
+  hfp:
+    role: "HF"                          # HF (Hands-Free) or AG (Audio Gateway)
+    codec_preference: ["CVSD"]          # Codec priority: ["mSBC", "CVSD"] or ["CVSD"]
+    features:
+      codec_negotiation: false          # Enable codec negotiation (set false for CVSD only)
+      wideband_speech: false            # Enable wideband speech (mSBC)
+      voice_recognition: false          # Enable voice recognition
+      volume_control: true              # Enable remote volume control
+      
+  # SCO Settings
+  sco:
+    routing: "hci"                      # "hci" (over USB) or "pcm" (hardware codec)
+    mtu: 64                            # SCO MTU size
+    packet_type: "HV3"                 # HV1, HV2, HV3, EV3, 2-EV3, etc.
+    
+  # Audio Settings
+  audio:
+    sample_rate: 8000                   # 8000 for CVSD, 16000 for mSBC
+    channels: 1                         # Mono for HFP
+    
+# BlueALSA Settings
+bluealsa:
+  enabled: true
+  profiles: ["a2dp-sink", "hfp-hf"]
+  codecs:
+    sbc:
+      quality: "high"
+      bitpool: 53
+    cvsd:
+      enabled: true
+    msbc:
+      enabled: false                    # Disable if causing issues
+      
+# Monitoring Settings
+monitoring:
+  packet_capture: true
+  log_level: "INFO"                     # DEBUG, INFO, WARNING, ERROR
+  log_at_commands: true
+  log_sco_quality: true
+  
+# API Settings
+api:
+  host: "0.0.0.0"
+  port: 8000
+  cors_enabled: true
+  
+# Troubleshooting Options
+troubleshooting:
+  force_cvsd_only: true                 # Force CVSD codec to avoid negotiation issues
+  disable_esco: true                    # Disable eSCO for better compatibility
+  experimental_features: true           # Enable BlueZ experimental features
+  retry_on_failure: true
+  max_retries: 3
+  retry_delay: 5                        # Seconds between retries
