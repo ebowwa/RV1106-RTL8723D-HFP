@@ -7,14 +7,17 @@ echo "Building rtk_hciattach for ARM..."
 if command -v arm-linux-gnueabihf-gcc &> /dev/null; then
     echo "Using ARM cross-compiler..."
     CC=arm-linux-gnueabihf-gcc
-elif [ -f /.dockerenv ]; then
-    echo "Running in Docker..."
-    CC=gcc
 else
-    echo "Installing dependencies..."
+    echo "Installing ARM cross-compiler..."
     sudo apt-get update
     sudo apt-get install -y gcc-arm-linux-gnueabihf
-    CC=arm-linux-gnueabihf-gcc
+    # Check again after installation
+    if command -v arm-linux-gnueabihf-gcc &> /dev/null; then
+        CC=arm-linux-gnueabihf-gcc
+    else
+        echo "Failed to install ARM cross-compiler"
+        exit 1
+    fi
 fi
 
 # Clone source if not present
