@@ -1,0 +1,60 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-rtk-hciattach:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install ARM toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-linux-gnueabihf
+    
+    - name: Build rtk_hciattach
+      run: |
+        cd tools/rtk_hciattach
+        chmod +x build.sh
+        ./build.sh
+    
+    - name: Upload rtk_hciattach
+      uses: actions/upload-artifact@v3
+      with:
+        name: rtk_hciattach-arm
+        path: tools/rtk_hciattach/rtk_hciattach
+
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        pip install pytest pytest-asyncio aiofiles
+    
+    - name: Run tests
+      run: |
+        cd RV1106-BlueFusion-HFP
+        python -m pytest src/ -v
+
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build documentation
+      run: |
+        echo "Documentation build placeholder"
+        # Add mkdocs or sphinx build here
